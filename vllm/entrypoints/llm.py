@@ -156,6 +156,11 @@ class LLM:
             values will increase the KV cache size and thus improve the model's
             throughput. However, if the value is too high, it may cause out-of-
             memory (OOM) errors.
+        gpu_memory_utilization_gb: Amount of GPU memory to reserve in GiB.
+            This provides fine-grained control over GPU memory usage and is
+            particularly useful on unified memory systems where available memory
+            changes dynamically. If specified, it overrides gpu_memory_utilization.
+            Cannot be used simultaneously with kv_cache_memory_bytes.
         kv_cache_memory_bytes: Size of KV Cache per GPU in bytes. By default,
             this is set to None and vllm can automatically infer the kv cache
             size based on gpu_memory_utilization. However, users may want to
@@ -234,6 +239,7 @@ class LLM:
         chat_template: Path | str | None = None,
         seed: int = 0,
         gpu_memory_utilization: float = 0.9,
+        gpu_memory_utilization_gb: float | None = None,
         cpu_offload_gb: float = 0,
         offload_group_size: int = 0,
         offload_num_in_group: int = 1,
@@ -356,6 +362,7 @@ class LLM:
             tokenizer_revision=tokenizer_revision,
             seed=seed,
             gpu_memory_utilization=gpu_memory_utilization,
+            gpu_memory_utilization_gb=gpu_memory_utilization_gb,
             kv_cache_memory_bytes=kv_cache_memory_bytes,
             cpu_offload_gb=cpu_offload_gb,
             offload_group_size=offload_group_size,

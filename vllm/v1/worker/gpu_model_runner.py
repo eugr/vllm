@@ -5355,8 +5355,8 @@ class GPUModelRunner(
                 raise RuntimeError(
                     "CUDA out of memory occurred when warming up sampler with "
                     f"{num_reqs} dummy requests. Please try lowering "
-                    "`max_num_seqs` or `gpu_memory_utilization` when "
-                    "initializing the engine."
+                    "`max_num_seqs`, `gpu_memory_utilization`, or "
+                    "`gpu_memory_utilization_gb` when initializing the engine."
                 ) from e
             else:
                 raise e
@@ -5434,8 +5434,8 @@ class GPUModelRunner(
                 raise RuntimeError(
                     "CUDA out of memory occurred when warming up pooler "
                     f"({task=}) with {num_reqs} dummy requests. Please try "
-                    "lowering `max_num_seqs` or `gpu_memory_utilization` when "
-                    "initializing the engine."
+                    "lowering `max_num_seqs`, `gpu_memory_utilization`, or "
+                    "`gpu_memory_utilization_gb` when initializing the engine."
                 ) from e
             else:
                 raise e

@@ -405,20 +405,42 @@ def request_memory(init_snapshot: MemorySnapshot, cache_config: CacheConfig) -> 
     Calculate the amount of memory required by vLLM, then validate
     that the current amount of free memory is sufficient for that.
     """
-    requested_memory = math.ceil(
-        init_snapshot.total_memory * cache_config.gpu_memory_utilization
-    )
-
-    if init_snapshot.free_memory < requested_memory:
-        raise ValueError(
-            f"Free memory on device {init_snapshot.device_} "
-            f"({format_gib(init_snapshot.free_memory)}/"
-            f"{format_gib(init_snapshot.total_memory)} GiB) on startup "
-            f"is less than desired GPU memory utilization "
-            f"({cache_config.gpu_memory_utilization}, "
-            f"{format_gib(requested_memory)} GiB). Decrease GPU memory "
-            f"utilization or reduce GPU memory used by other processes."
+    if cache_config.gpu_memory_utilization_gb is not None:
+        requested_memory = math.ceil(cache_config.gpu_memory_utilization_gb * 1024**3)
+        if requested_memory <= 0:
+            raise ValueError(
+                f"gpu_memory_utilization_gb must be positive, got "
+                f"{cache_config.gpu_memory_utilization_gb} GiB."
+            )
+        if requested_memory > init_snapshot.total_memory:
+            raise ValueError(
+                f"Requested memory ({format_gib(requested_memory)} GiB) exceeds "
+                f"total GPU memory ({format_gib(init_snapshot.total_memory)} GiB). "
+                f"Reduce gpu_memory_utilization_gb or use a smaller value."
+            )
+        safety_margin = 0.5 * 1024**3
+        if requested_memory > init_snapshot.free_memory + safety_margin:
+            raise ValueError(
+                f"Requested memory ({format_gib(requested_memory)} GiB) exceeds "
+                f"available memory ({format_gib(init_snapshot.free_memory)} GiB) "
+                f"with safety margin ({format_gib(safety_margin)} GiB). "
+                f"Reduce gpu_memory_utilization_gb or free up GPU memory."
+            )
+    else:
+        requested_memory = math.ceil(
+            init_snapshot.total_memory * cache_config.gpu_memory_utilization
         )
+
+        if init_snapshot.free_memory < requested_memory:
+            raise ValueError(
+                f"Free memory on device {init_snapshot.device_} "
+                f"({format_gib(init_snapshot.free_memory)}/"
+                f"{format_gib(init_snapshot.total_memory)} GiB) on startup "
+                f"is less than desired GPU memory utilization "
+                f"({cache_config.gpu_memory_utilization}, "
+                f"{format_gib(requested_memory)} GiB). Decrease GPU memory "
+                f"utilization or reduce GPU memory used by other processes."
+            )
 
     return requested_memory
 

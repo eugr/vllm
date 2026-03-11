@@ -45,6 +45,11 @@ class CacheConfig:
     not matter if you have another vLLM instance running on the same GPU. For
     example, if you have two vLLM instances running on the same GPU, you can
     set the GPU memory utilization to 0.5 for each instance."""
+    gpu_memory_utilization_gb: float | None = Field(default=None, gt=0)
+    """Amount of GPU memory to be used in GiB. This provides fine-grained control
+    over GPU memory usage and is particularly useful on unified memory systems
+    where available memory changes dynamically. If specified, it overrides
+    gpu_memory_utilization. Cannot be used simultaneously with kv_cache_memory_bytes."""
     cache_dtype: CacheDType = "auto"
     """Data type for kv cache storage. If "auto", will use model data type.
     CUDA 11.8+ supports fp8 (=fp8_e4m3) and fp8_e5m2. ROCm (AMD GPU) supports
@@ -204,6 +209,18 @@ class CacheConfig:
             object.__setattr__(self, "user_specified_block_size", True)
         return self
 
+    @model_validator(mode="after")
+    def _validate_memory_params(self) -> "CacheConfig":
+        if (
+            self.gpu_memory_utilization_gb is not None
+            and self.kv_cache_memory_bytes is not None
+        ):
+            raise ValueError(
+                "Cannot specify both gpu_memory_utilization_gb and "
+                "kv_cache_memory_bytes. Please use only one of them."
+            )
+        return self
+
     @field_validator("cache_dtype", mode="after")
     @classmethod
     def _validate_cache_dtype(cls, cache_dtype: CacheDType) -> CacheDType:
@@ -215,3 +232,15 @@ class CacheConfig:
                 "scaling factor."
             )
         return cache_dtype
+
+    @model_validator(mode="after")
+    def _validate_memory_params(self) -> "CacheConfig":
+        if (
+            self.gpu_memory_utilization_gb is not None
+            and self.kv_cache_memory_bytes is not None
+        ):
+            raise ValueError(
+                "Cannot specify both gpu_memory_utilization_gb and "
+                "kv_cache_memory_bytes. Please use only one of them."
+            )
+        return self

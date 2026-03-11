@@ -357,7 +357,8 @@ class Worker(WorkerBase):
 
         Tip:
             You may limit the usage of GPU memory
-            by adjusting the `gpu_memory_utilization` parameter.
+            by adjusting the `gpu_memory_utilization` or
+            `gpu_memory_utilization_gb` parameter.
         """
         if kv_cache_memory_bytes := self.cache_config.kv_cache_memory_bytes:
             # still need a profile run which compiles the model for
@@ -369,7 +370,7 @@ class Worker(WorkerBase):
                 f"GiB, reserved {format_gib(kv_cache_memory_bytes)} GiB memory for "
                 "KV Cache as specified by kv_cache_memory_bytes config and "
                 "skipped memory profiling. This does not respect the "
-                "gpu_memory_utilization config. Only use kv_cache_memory_bytes "
+                "gpu_memory_utilization or gpu_memory_utilization_gb config. Only use kv_cache_memory_bytes "
                 "config when you want manual control of KV cache memory "
                 "size. If OOM'ed, check the difference of initial free "
                 "memory between the current run and the previous run "
