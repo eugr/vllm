@@ -232,15 +232,3 @@ class CacheConfig:
                 "scaling factor."
             )
         return cache_dtype
-
-    @model_validator(mode="after")
-    def _validate_memory_params(self) -> "CacheConfig":
-        if (
-            self.gpu_memory_utilization_gb is not None
-            and self.kv_cache_memory_bytes is not None
-        ):
-            raise ValueError(
-                "Cannot specify both gpu_memory_utilization_gb and "
-                "kv_cache_memory_bytes. Please use only one of them."
-            )
-        return self
